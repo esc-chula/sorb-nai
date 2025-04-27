@@ -1,14 +1,7 @@
 import * as React from 'react'
 import { Slot } from '@radix-ui/react-slot'
 import { type VariantProps, cva } from 'class-variance-authority'
-import {
-  HamIcon,
-  MenuIcon,
-  PanelLeftIcon,
-  PanelRight,
-  PanelRightIcon,
-  XIcon,
-} from 'lucide-react'
+import { MenuIcon, XIcon } from 'lucide-react'
 
 import { useIsMobile } from '~/hooks/use-mobile'
 import { cn } from '~/lib/utils'
