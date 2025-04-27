@@ -1,8 +1,9 @@
-f = open("sheet.csv", "r")
+f = open("excel.csv", "r")
 
 res = {}
 
-# skip first 2 lines
+# skip first 3 lines
+f.readline()
 f.readline()
 f.readline()
 
@@ -31,10 +32,10 @@ for line in data:
 	if array[0].isdigit():
 			current = array[0]
 			res[current] = {
-					"date": array[1],
-					"time": array[2],
-					"code": array[3],
-					"title": array[4],
+					"code": array[1],
+					"title": array[2],
+					"date": array[3],
+					"time": array[4],
 					"sum_student": int(array[5]) if array[5].isdigit() else 0,
 					"group": [{
 							"building": array[6],
