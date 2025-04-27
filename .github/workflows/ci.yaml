@@ -1,0 +1,61 @@
+name: CI - Build and Push Docker Image
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to the Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Repository to lowercase
+        env:
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          echo "IMAGE_NAME=ghcr.io/${REPOSITORY@L}" >> "$GITHUB_ENV"
+
+      - name: Gather tags name
+        env:
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          SHA: ${{ github.sha }}
+          REF: ${{ github.ref }}
+        id: tags
+        run: |
+          RESULT="$IMAGE_NAME:latest,$IMAGE_NAME:$SHA"
+
+          case "$REF" in
+          refs/tags/v*)
+              RESULT="${RESULT},$IMAGE_NAME:${REF#refs/tags/v}"
+          ;;
+          esac
+
+          echo "tags = $RESULT"
+          echo "tags=$RESULT" >> "$GITHUB_OUTPUT"
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v3
+        with:
+          file: Dockerfile
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+          cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache,mode=max
