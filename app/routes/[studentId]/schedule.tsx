@@ -134,7 +134,7 @@ export default function SchedulePage({ loaderData }: Route.ComponentProps) {
               </AccordionTrigger>
             </CardHeader>
             <AccordionContent>
-              <CardContent className='flex max-h-[50dvh] w-full flex-col gap-2 overflow-auto'>
+              <CardContent className='flex w-full flex-col gap-2 overflow-auto'>
                 {upcomingClasses.length > 0 ? (
                   upcomingClasses.map((classInfo) => (
                     <ExamCard key={classInfo.code} {...classInfo} />
@@ -161,7 +161,7 @@ export default function SchedulePage({ loaderData }: Route.ComponentProps) {
               </AccordionTrigger>
             </CardHeader>
             <AccordionContent>
-              <CardContent className='flex max-h-[50dvh] w-full flex-col gap-2 overflow-auto'>
+              <CardContent className='flex w-full flex-col gap-2 overflow-auto'>
                 {pastClasses.length > 0 ? (
                   pastClasses.map((classInfo) => (
                     <ExamCard key={classInfo.code} {...classInfo} />
@@ -179,17 +179,17 @@ export default function SchedulePage({ loaderData }: Route.ComponentProps) {
         </Card>
 
         {noDataClasses.length > 0 && (
-          <Card className='max-h-[50dvh] w-full overflow-auto'>
+          <Card className='w-full'>
             <AccordionItem value='no-data' className='w-full'>
               <CardHeader>
                 <AccordionTrigger>
-                  <CardTitle>
+                  <CardTitle className='text-base'>
                     {language === 'th' ? 'ไม่มีข้อมูล' : 'No Exam Data'}
                   </CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
-                <CardContent>
+                <CardContent className='flex w-full flex-col gap-2 overflow-auto'>
                   {noDataClasses.map((classInfo) => (
                     <div key={classInfo} className='flex items-center gap-2'>
                       <span>{classInfo}</span>
