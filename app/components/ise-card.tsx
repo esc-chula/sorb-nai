@@ -42,6 +42,12 @@ export function IseCard({ date, time, title, code, group }: ExamCardProps) {
           JSON.stringify({ ...parsedSelectedSecs, [code]: group[0].sec })
         )
       }
+    } else {
+      setSelectedSec(group[0].sec)
+      localStorage.setItem(
+        'selectedSecs',
+        JSON.stringify({ [code]: group[0].sec })
+      )
     }
   }, [])
 
