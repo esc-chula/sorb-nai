@@ -11,9 +11,15 @@ export const env = createEnv({
    * The prefix that client-side variables must have. This is enforced both at
    * a type-level and at runtime.
    */
-  clientPrefix: 'PUBLIC_',
+  clientPrefix: 'VITE_',
 
-  client: {},
+  client: {
+    /**
+     * The Google Tag Manager ID. This is used to track page views and events
+     * in Google Analytics.
+     */
+    VITE_GTAG_ID: z.string(),
+  },
 
   /**
    * What object holds the environment variables at runtime. This is usually

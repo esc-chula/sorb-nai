@@ -13,6 +13,22 @@ import {
   TableRow,
 } from './ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger } from './ui/select'
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from './ui/drawer'
+import { Button } from './ui/button'
+import { Calendar } from 'lucide-react'
+import { Link } from 'react-router'
+import { google, ics, outlook, type CalendarEvent } from 'calendar-link'
+import { GoogleCalendarIcon } from './logos/google-calendar'
+import { OutlookLogo } from './logos/outlook'
+import { AppleLogo } from './logos/apple'
 
 type ExamCardProps = Pick<
   IseEntry,
@@ -48,6 +64,36 @@ export function IseCard({ date, time, title, code, group }: ExamCardProps) {
         'selectedSecs',
         JSON.stringify({ [code]: group[0].sec })
       )
+    }
+  }, [])
+
+  const event: CalendarEvent = useMemo(() => {
+    const selectedGroup = group.find((g) => g.sec === selectedSec)
+    if (!selectedGroup) {
+      return {
+        title: `${code} ${title}`,
+        start,
+        end,
+        location: '',
+      }
+    }
+
+    const { building, room } = selectedGroup
+
+    const location = building
+      .map((b, i) => {
+        const roomNumber = room[i]
+        return `${language === 'th' ? 'อาคาร' : 'Building'} ${b} ${
+          language === 'th' ? 'ห้อง' : 'Room'
+        } ${roomNumber}`
+      })
+      .join(', ')
+
+    return {
+      title: `${code} ${title}`,
+      start,
+      end,
+      location,
     }
   }, [])
 
@@ -134,6 +180,51 @@ export function IseCard({ date, time, title, code, group }: ExamCardProps) {
           </Table>
         </div>
       </div>
+      <Drawer>
+        <DrawerTrigger asChild>
+          <Button variant='outline' className='w-full'>
+            <Calendar />
+            {language === 'th' ? 'เพิ่มลงในปฏิทิน' : 'Add to Calendar'}
+          </Button>
+        </DrawerTrigger>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>
+              {language === 'th'
+                ? `เพิ่ม ${title} ลงในปฏิทิน`
+                : `Add ${title} to Calendar`}
+            </DrawerTitle>
+            <DrawerDescription>
+              {format(event.start, 'eeee d MMM yyyy เวลา HH:mm', {
+                locale: language === 'th' ? th : enUS,
+              })}{' '}
+              -{' '}
+              {format(event.end, 'HH:mm', {
+                locale: language === 'th' ? th : enUS,
+              })}
+              <br />
+              {event.location}
+            </DrawerDescription>
+          </DrawerHeader>
+          <DrawerFooter>
+            <Button variant='outline' className='w-full' asChild>
+              <Link to={google(event)} target='_blank'>
+                <GoogleCalendarIcon className='size-4' /> Google Calendar
+              </Link>
+            </Button>
+            <Button variant='outline' className='w-full' asChild>
+              <Link to={ics(event)} target='_blank'>
+                <AppleLogo className='size-4' /> Apple Calendar (ICS)
+              </Link>
+            </Button>
+            <Button variant='outline' className='w-full' asChild>
+              <Link to={outlook(event)} target='_blank'>
+                <OutlookLogo className='size-4' /> Outlook
+              </Link>
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </div>
   )
 }

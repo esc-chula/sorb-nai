@@ -46,7 +46,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta charSet='utf-8' />
         <meta name='viewport' content='width=device-width, initial-scale=1' />
         <Meta />
-        <Links />
+        <Links />{' '}
+        <script
+          async
+          src={`https://www.googletagmanager.com/gtag/js?id=${import.meta.env.VITE_GTAG_ID}`}
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer = window.dataLayer || [];
+                    function gtag(){dataLayer.push(arguments);}
+                    gtag('js', new Date());
+                    gtag('config', ${import.meta.env.VITE_GTAG_ID});`,
+          }}
+        />
       </head>
       <body>
         {children}
