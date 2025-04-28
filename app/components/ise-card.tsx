@@ -37,7 +37,7 @@ type ExamCardProps = Pick<
 
 export function IseCard({ date, time, title, code, group }: ExamCardProps) {
   const { language } = useLanguage()
-  const [selectedSec, setSelectedSec] = useState<string | null>(null)
+  const [selectedSec, setSelectedSec] = useState<string>()
 
   const [start, end] = useMemo(
     () => getDateAndTimeFromString(date, time),
@@ -117,7 +117,7 @@ export function IseCard({ date, time, title, code, group }: ExamCardProps) {
         <h2 className='text-esc-carmine-500 w-full font-semibold'>
           {code} {title}
         </h2>
-        <Select>
+        <Select value={selectedSec} onValueChange={handleSelectSec}>
           <SelectTrigger disabled={group.length === 1}>
             {selectedSec ? (
               <span className='text-esc-carmine-500'>{selectedSec}</span>
@@ -129,11 +129,7 @@ export function IseCard({ date, time, title, code, group }: ExamCardProps) {
           </SelectTrigger>
           <SelectContent>
             {group.map((g) => (
-              <SelectItem
-                key={g.sec}
-                value={g.sec}
-                onClick={() => handleSelectSec(g.sec)}
-              >
+              <SelectItem key={g.sec} value={g.sec}>
                 {g.sec}
               </SelectItem>
             ))}
