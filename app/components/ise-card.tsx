@@ -67,7 +67,7 @@ export function IseCard({ date, time, title, code, group }: ExamCardProps) {
 
   return (
     <div className='border-border group flex size-full flex-col gap-1 rounded-lg border px-6 py-2.5 text-base shadow-sm'>
-      <div className='flex items-center justify-between'>
+      <div className='flex items-center justify-between gap-2'>
         <h2 className='text-esc-carmine-500 w-full font-semibold'>
           {code} {title}
         </h2>

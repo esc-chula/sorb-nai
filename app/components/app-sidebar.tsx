@@ -46,7 +46,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel className='text-primary gap-2 text-2xl font-semibold'>
             <img src='/logo.svg' alt='logo' />
-            <span>{language === 'th' ? 'สอบไหน' : 'SorbNai?'}</span>
+            <span>{language === 'th' ? 'สอบไหน' : 'SorbNai'}</span>
           </SidebarGroupLabel>
           {studentId ? (
             <SidebarGroupContent className='mt-4'>
