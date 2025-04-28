@@ -95,7 +95,7 @@ export function IseCard({ date, time, title, code, group }: ExamCardProps) {
       end,
       location,
     }
-  }, [])
+  }, [selectedSec])
 
   const handleSelectSec = (sec: string) => {
     setSelectedSec(sec)
