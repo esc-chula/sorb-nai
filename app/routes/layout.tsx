@@ -10,7 +10,7 @@ export default function Layout() {
     <LanguageProvider>
       <SidebarProvider>
         <AppSidebar />
-        <main className='flex min-h-dvh w-full flex-col bg-[url(/cloud.png)] bg-center bg-repeat'>
+        <main className='flex min-h-dvh w-full flex-col bg-[url(/cloud.png)] bg-top bg-repeat'>
           <Header />
           <Outlet />
         </main>

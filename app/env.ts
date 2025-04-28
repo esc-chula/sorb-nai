@@ -4,6 +4,7 @@ import { z } from 'zod'
 export const env = createEnv({
   server: {
     FILE_PATH: z.string().url(),
+    ISE_FILE_PATH: z.string().url(),
   },
 
   /**

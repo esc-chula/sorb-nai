@@ -10,5 +10,6 @@ export default [
     index('./routes/home.tsx'),
     route('/:studentId', './routes/[studentId]/select-classes.tsx'),
     route('/:studentId/schedule', './routes/[studentId]/schedule.tsx'),
+    route('/:studentId/ise', './routes/[studentId]/ise.tsx'),
   ]),
 ] satisfies RouteConfig

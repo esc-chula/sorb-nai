@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
-import { ExamCard } from '~/components/exam-card'
 import {
   Accordion,
   AccordionContent,
@@ -16,15 +15,11 @@ import {
   CardTitle,
 } from '~/components/ui/card'
 import { env } from '~/env'
-import { getMyClassInfoWithInRange } from '~/lib/classes'
 import { getDateAndTimeFromString } from '~/lib/date'
 import { useLanguage } from '~/providers/language'
-import {
-  classScheduleSchema,
-  type MyClassInfo,
-  type MyClassInfoWithInRange,
-} from '~/types/class'
 import type { Route } from '../../+types/root'
+import { iseDataSchema, type IseEntry } from '~/types/ise'
+import { IseCard } from '~/components/ise-card'
 
 export async function loader({ params }: Route.LoaderArgs) {
   const { studentId } = params
@@ -32,11 +27,11 @@ export async function loader({ params }: Route.LoaderArgs) {
     throw new Error('Student ID is required')
   }
 
-  const res = await fetch(env.FILE_PATH)
+  const res = await fetch(env.ISE_FILE_PATH)
   if (!res.ok) {
     throw new Error('Failed to fetch data')
   }
-  const { data, success } = classScheduleSchema.safeParse(await res.json())
+  const { data, success } = iseDataSchema.safeParse(await res.json())
 
   if (!success) {
     return {
@@ -44,10 +39,10 @@ export async function loader({ params }: Route.LoaderArgs) {
     }
   }
 
-  const myClassesWithInRange = getMyClassInfoWithInRange(studentId, data)
+  const classes: IseEntry[] = Object.values(data)
 
   return {
-    classes: myClassesWithInRange,
+    classes,
   }
 }
 
@@ -56,15 +51,15 @@ export default function SchedulePage({ loaderData }: Route.ComponentProps) {
   const { studentId } = useParams()
   const navigate = useNavigate()
   const { classes } = loaderData as unknown as {
-    classes: MyClassInfoWithInRange[]
+    classes: IseEntry[]
   }
-  const [upcomingClasses, setUpcomingClasses] = useState<MyClassInfo[]>([])
-  const [pastClasses, setPastClasses] = useState<MyClassInfo[]>([])
+  const [upcomingClasses, setUpcomingClasses] = useState<IseEntry[]>([])
+  const [pastClasses, setPastClasses] = useState<IseEntry[]>([])
   const [noDataClasses, setNoDataClasses] = useState<string[]>([])
 
   useEffect(() => {
-    if (localStorage.getItem('tab') === 'ise') {
-      navigate(`/${studentId}/ise`)
+    if (localStorage.getItem('tab') === 'thai') {
+      navigate(`/${studentId}/schedule`)
     }
   }, [])
 
@@ -94,26 +89,28 @@ export default function SchedulePage({ loaderData }: Route.ComponentProps) {
       .filter((classInfo) => {
         const [startDate] = getDateAndTimeFromString(
           classInfo.date,
-          classInfo.time
+          classInfo.time,
+          true
         )
         return startDate >= today
       })
       .sort((a, b) => {
-        const [startDateA] = getDateAndTimeFromString(a.date, a.time)
-        const [startDateB] = getDateAndTimeFromString(b.date, b.time)
+        const [startDateA] = getDateAndTimeFromString(a.date, a.time, true)
+        const [startDateB] = getDateAndTimeFromString(b.date, b.time, true)
         return startDateA.getTime() - startDateB.getTime()
       })
     const pastClasses = filteredClasses
       .filter((classInfo) => {
         const [startDate] = getDateAndTimeFromString(
           classInfo.date,
-          classInfo.time
+          classInfo.time,
+          true
         )
         return startDate < today
       })
       .sort((a, b) => {
-        const [startDateA] = getDateAndTimeFromString(a.date, a.time)
-        const [startDateB] = getDateAndTimeFromString(b.date, b.time)
+        const [startDateA] = getDateAndTimeFromString(a.date, a.time, true)
+        const [startDateB] = getDateAndTimeFromString(b.date, b.time, true)
         return startDateA.getTime() - startDateB.getTime()
       })
     setUpcomingClasses(upcomingClasses)
@@ -144,7 +141,7 @@ export default function SchedulePage({ loaderData }: Route.ComponentProps) {
               <CardContent className='flex w-full flex-col gap-2 overflow-auto'>
                 {upcomingClasses.length > 0 ? (
                   upcomingClasses.map((classInfo) => (
-                    <ExamCard key={classInfo.code} {...classInfo} />
+                    <IseCard key={classInfo.code} {...classInfo} />
                   ))
                 ) : (
                   <span>
@@ -171,7 +168,7 @@ export default function SchedulePage({ loaderData }: Route.ComponentProps) {
               <CardContent className='flex w-full flex-col gap-2 overflow-auto'>
                 {pastClasses.length > 0 ? (
                   pastClasses.map((classInfo) => (
-                    <ExamCard key={classInfo.code} {...classInfo} />
+                    <IseCard key={classInfo.code} {...classInfo} />
                   ))
                 ) : (
                   <span>

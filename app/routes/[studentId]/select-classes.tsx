@@ -1,5 +1,7 @@
 import { Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router'
+import { Button } from '~/components/ui/button'
 import {
   Card,
   CardContent,
@@ -8,16 +10,16 @@ import {
   CardTitle,
 } from '~/components/ui/card'
 import { Input } from '~/components/ui/input'
-import type { Route } from '../../+types/root'
-import { env } from '~/env'
-import { classScheduleSchema, type ClassInfoWithInRange } from '~/types/class'
-import { Button } from '~/components/ui/button'
-import { Switch } from '~/components/ui/switch'
 import { Label } from '~/components/ui/label'
-import { cn } from '~/lib/utils'
-import { useNavigate, useParams } from 'react-router'
+import { Switch } from '~/components/ui/switch'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
+import { env } from '~/env'
 import { getClassInfoWithInRange } from '~/lib/classes'
+import { cn } from '~/lib/utils'
 import { useLanguage } from '~/providers/language'
+import { classScheduleSchema, type ClassInfoWithInRange } from '~/types/class'
+import { iseDataSchema, type IseEntry } from '~/types/ise'
+import type { Route } from '../../+types/root'
 
 export async function loader({ params }: Route.LoaderArgs) {
   const { studentId } = params
@@ -29,18 +31,30 @@ export async function loader({ params }: Route.LoaderArgs) {
   if (!res.ok) {
     throw new Error('Failed to fetch data')
   }
-  const { data, success } = classScheduleSchema.safeParse(await res.json())
 
-  if (!success) {
+  const iseRes = await fetch(env.ISE_FILE_PATH)
+  if (!iseRes.ok) {
+    throw new Error('Failed to fetch data')
+  }
+
+  const { data, success } = classScheduleSchema.safeParse(await res.json())
+  const { data: iseData, success: iseSuccess } = iseDataSchema.safeParse(
+    await iseRes.json()
+  )
+
+  if (!success || !iseSuccess) {
     return {
       classes: [],
+      ise: [],
     }
   }
 
   const classesWithInRange = getClassInfoWithInRange(studentId, data)
+  const ise: IseEntry[] = Object.values(iseData)
 
   return {
     classes: classesWithInRange,
+    ise,
   }
 }
 
@@ -48,19 +62,25 @@ export default function SelectClassesPage({
   loaderData,
 }: Route.ComponentProps) {
   const { language } = useLanguage()
-  const { classes } = loaderData as unknown as {
+  const { classes, ise } = loaderData as unknown as {
     classes: ClassInfoWithInRange[]
+    ise: IseEntry[]
   }
   const { studentId } = useParams()
   const [search, setSearch] = useState<string>('')
   const [selectedClasses, setSelectedClasses] = useState<string[]>([])
   const [showMode, setShowMode] = useState<'all' | 'in-range'>('in-range')
+  const [tab, setTab] = useState<'thai' | 'ise'>('thai')
   const navigate = useNavigate()
 
   useEffect(() => {
     const storedSelectedClasses = localStorage.getItem('selectedClasses')
     if (storedSelectedClasses) {
       setSelectedClasses(JSON.parse(storedSelectedClasses))
+    }
+    const storedTab = localStorage.getItem('tab')
+    if (storedTab) {
+      setTab(storedTab as 'thai' | 'ise')
     }
   }, [])
 
@@ -69,8 +89,24 @@ export default function SelectClassesPage({
   }
 
   const handleContinue = () => {
-    localStorage.setItem('selectedClasses', JSON.stringify(selectedClasses))
-    navigate(`/${studentId}/schedule`)
+    localStorage.setItem(
+      'selectedClasses',
+      JSON.stringify(
+        selectedClasses.filter((code) => {
+          const iseInfo = ise.find((c) => c.code === code)
+          if (iseInfo) {
+            return tab === 'ise'
+          }
+          return tab === 'thai'
+        })
+      )
+    )
+    if (tab === 'ise') {
+      navigate(`/${studentId}/ise`)
+    } else {
+      localStorage.setItem('selectedSecs', JSON.stringify([]))
+      navigate(`/${studentId}/schedule`)
+    }
   }
 
   return (
@@ -93,56 +129,129 @@ export default function SelectClassesPage({
               className='w-full pl-8'
             />
           </div>
-          <div className='flex max-h-[40dvh] w-full flex-col gap-2.5 overflow-y-auto sm:max-h-[500px] md:max-h-[600px] lg:max-h-[700px] xl:max-h-[800px]'>
-            {classes
-              .filter((classInfo) => {
-                const { code, title } = classInfo
-                const isSelected = selectedClasses.includes(code)
+          <Tabs
+            className='w-full'
+            defaultValue='thai'
+            value={tab}
+            onValueChange={(value) => {
+              setTab(value as 'thai' | 'ise')
+              localStorage.setItem('tab', value)
+            }}
+          >
+            <TabsList className='w-full'>
+              <TabsTrigger value='thai'>
+                {language === 'th' ? 'ภาคไทย' : 'Thai'}
+              </TabsTrigger>
+              <TabsTrigger value='ise'>
+                {language === 'th' ? 'ISE' : 'ISE'}
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value='thai'>
+              <div className='flex max-h-[40dvh] w-full flex-col gap-2.5 overflow-y-auto sm:max-h-[500px] md:max-h-[600px] lg:max-h-[700px] xl:max-h-[800px]'>
+                {classes
+                  .filter((classInfo) => {
+                    const { code, title } = classInfo
+                    const isSelected = selectedClasses.includes(code)
 
-                return (
-                  isSelected ||
-                  ((title.toLowerCase().includes(search.toLowerCase()) ||
-                    code.toLowerCase().includes(search.toLowerCase())) &&
-                    (showMode === 'in-range' ? classInfo.inRange : true))
-                )
-              })
-              .map((classInfo) => {
-                const { code, title } = classInfo
-                const isSelected = selectedClasses.includes(code)
+                    return (
+                      isSelected ||
+                      ((title.toLowerCase().includes(search.toLowerCase()) ||
+                        code.toLowerCase().includes(search.toLowerCase())) &&
+                        (showMode === 'in-range' ? classInfo.inRange : true))
+                    )
+                  })
+                  .map((classInfo) => {
+                    const { code, title } = classInfo
+                    const isSelected = selectedClasses.includes(code)
 
-                return (
-                  <Button
-                    key={code}
-                    asChild
-                    variant='outline'
-                    onClick={() => {
-                      if (isSelected) {
-                        setSelectedClasses((prev) =>
-                          prev.filter((c) => c !== code)
-                        )
-                      } else {
-                        setSelectedClasses((prev) => [...prev, code])
-                      }
-                    }}
-                  >
-                    <div
-                      className={cn(
-                        'flex h-max w-full items-start justify-start gap-1 px-6 py-2.5 shadow-sm transition-colors duration-150 hover:underline',
-                        isSelected
-                          ? 'bg-esc-carmine-400 text-esc-carmine-50 border-esc-carmine-600 hover:bg-esc-carmine-400 hover:text-esc-carmine-50'
-                          : 'bg-card text-esc-carmine-400 border-esc-carmine-200 hover:bg-card hover:text-esc-carmine-400'
-                      )}
-                    >
-                      <span>{code}</span>
-                      <span className='w-full truncate'>{title}</span>
-                    </div>
-                  </Button>
-                )
-              })}
-          </div>
+                    return (
+                      <Button
+                        key={code}
+                        asChild
+                        variant='outline'
+                        onClick={() => {
+                          if (isSelected) {
+                            setSelectedClasses((prev) =>
+                              prev.filter((c) => c !== code)
+                            )
+                          } else {
+                            setSelectedClasses((prev) => [...prev, code])
+                          }
+                        }}
+                      >
+                        <div
+                          className={cn(
+                            'flex h-max w-full items-start justify-start gap-1 px-6 py-2.5 shadow-sm transition-colors duration-150 hover:underline',
+                            isSelected
+                              ? 'bg-esc-carmine-400 text-esc-carmine-50 border-esc-carmine-600 hover:bg-esc-carmine-400 hover:text-esc-carmine-50'
+                              : 'bg-card text-esc-carmine-400 border-esc-carmine-200 hover:bg-card hover:text-esc-carmine-400'
+                          )}
+                        >
+                          <span>{code}</span>
+                          <span className='w-full truncate'>{title}</span>
+                        </div>
+                      </Button>
+                    )
+                  })}
+              </div>
+            </TabsContent>
+            <TabsContent value='ise'>
+              <div className='flex max-h-[40dvh] w-full flex-col gap-2.5 overflow-y-auto sm:max-h-[500px] md:max-h-[600px] lg:max-h-[700px] xl:max-h-[800px]'>
+                {ise
+                  .filter((classInfo) => {
+                    const { code, title } = classInfo
+                    const isSelected = selectedClasses.includes(code)
+
+                    return (
+                      isSelected ||
+                      title.toLowerCase().includes(search.toLowerCase()) ||
+                      code.toLowerCase().includes(search.toLowerCase())
+                    )
+                  })
+                  .map((classInfo) => {
+                    const { code, title } = classInfo
+                    const isSelected = selectedClasses.includes(code)
+
+                    return (
+                      <Button
+                        key={code}
+                        asChild
+                        variant='outline'
+                        onClick={() => {
+                          if (isSelected) {
+                            setSelectedClasses((prev) =>
+                              prev.filter((c) => c !== code)
+                            )
+                          } else {
+                            setSelectedClasses((prev) => [...prev, code])
+                          }
+                        }}
+                      >
+                        <div
+                          className={cn(
+                            'flex h-max w-full items-start justify-start gap-1 px-6 py-2.5 shadow-sm transition-colors duration-150 hover:underline',
+                            isSelected
+                              ? 'bg-esc-carmine-400 text-esc-carmine-50 border-esc-carmine-600 hover:bg-esc-carmine-400 hover:text-esc-carmine-50'
+                              : 'bg-card text-esc-carmine-400 border-esc-carmine-200 hover:bg-card hover:text-esc-carmine-400'
+                          )}
+                        >
+                          <span>{code}</span>
+                          <span className='w-full truncate'>{title}</span>
+                        </div>
+                      </Button>
+                    )
+                  })}
+              </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
         <CardFooter className='flex w-full flex-col items-start gap-4'>
-          <div className='flex items-center space-x-2'>
+          <div
+            className={cn(
+              'flex items-center space-x-2',
+              tab === 'ise' && 'hidden'
+            )}
+          >
             <Switch
               id='show-mode'
               checked={showMode === 'in-range'}
