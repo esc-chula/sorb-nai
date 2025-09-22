@@ -17,7 +17,7 @@ export const meta: Route.MetaFunction = () => [
   {
     name: 'description',
     content:
-      'เบื่อมั้ยที่ต้องหาห้องสอบใน spreadsheet ที่ยาวเหยียด มาใช้เว็บนี้สิจะได้รู้ว่าสอบห้องไหนวะ',
+      'กลับมาอีกครั้งให้ชาว INTANIA สำหรับ Sorbnai 🤯 พรุ่งนี้ต้องไปสอบที่ไหน กี่โมงนะ ?',
   },
 ]
 
