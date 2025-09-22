@@ -15,6 +15,6 @@ RUN --mount=type=cache,id=s/4b1a71ab-860a-4835-a1b8-a0053b5bad7f-/pnpm/store,tar
 # NOTE: Replace RAILWAY_SERVICE_ID with your actual Railway service ID
 RUN --mount=type=cache,id=s/4b1a71ab-860a-4835-a1b8-a0053b5bad7f-/app/node_modules/.vite,target=/app/node_modules/.vite pnpm run build
 
-# EXPOSE 8000
+EXPOSE 8000
 CMD [ "pnpm", "start" ]
 
