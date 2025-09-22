@@ -1,4 +1,4 @@
-# Welcome to React Router!
+# Welcome to React Router
 
 A modern, production-ready template for building full-stack React applications using React Router.
 
@@ -44,6 +44,21 @@ npm run build
 
 ## Deployment
 
+### Cloudflare Pages (SSR)
+
+This app deploys to Cloudflare Pages with SSR via Pages Functions located in `functions/[[path]].ts`.
+
+Important:
+
+- Cloudflare's runtime doesn't include Node built-ins by default. Our server bundle from React Router references `node:*` modules (via `@react-router/node`). To make this work on Pages Functions, enable the Node.js compatibility layer.
+- We've added a `wrangler.toml` at the repo root with:
+  - `compatibility_flags = ["nodejs_compat"]`
+  - `compatibility_date` set to a recent date
+
+Cloudflare Pages will detect this file during builds and apply the flag (see build logs: "Checking for configuration in a Wrangler configuration file (BETA)"). This resolves runtime errors like `No such module "node:fs"` when publishing Functions.
+
+No further changes are required in the Vite or React Router config for Pages deployment.
+
 ### Docker Deployment
 
 To build and run using Docker:
@@ -70,7 +85,7 @@ If you're familiar with deploying Node applications, the built-in app server is 
 
 Make sure to deploy the output of `npm run build`
 
-```
+```text
 ├── package.json
 ├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
 ├── build/

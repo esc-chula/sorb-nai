@@ -1,0 +1,8 @@
+# Cloudflare Pages Functions / Workers compatibility
+# Enable Node.js compatibility shims for packages that import built-in Node modules
+# like node:fs, node:path, node:stream from @react-router/node during SSR.
+# This is required for Pages Functions to resolve those imports at runtime.
+compatibility_flags = ["nodejs_compat"]
+
+# Keep compatibility_date recent; Cloudflare recommends updating periodically.
+compatibility_date = "2025-09-01"

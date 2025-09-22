@@ -8,13 +8,19 @@ import * as build from '../build/server/index.js'
 // Export an onRequest handler that delegates to React Router's request handler
 export const onRequest = createRequestHandler({
   build,
-  mode: process.env.NODE_ENV,
+  mode:
+    typeof process !== 'undefined' && process.env?.NODE_ENV
+      ? process.env.NODE_ENV
+      : 'production',
   // Provide env vars to route loaders/actions at runtime
   getLoadContext({ context }) {
-    const env = (context as any).cloudflare?.env ?? {}
+    const cf = (
+      context as unknown as { cloudflare?: { env?: Record<string, unknown> } }
+    )?.cloudflare
+    const env = (cf?.env ?? {}) as Record<string, unknown>
     return {
-      FILE_PATH: env.FILE_PATH,
-      ISE_FILE_PATH: env.ISE_FILE_PATH,
+      FILE_PATH: (env['FILE_PATH'] as string) ?? undefined,
+      ISE_FILE_PATH: (env['ISE_FILE_PATH'] as string) ?? undefined,
     }
   },
 })
