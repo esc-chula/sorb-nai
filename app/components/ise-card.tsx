@@ -40,7 +40,7 @@ export function IseCard({ date, time, title, code, group }: ExamCardProps) {
   const [selectedSec, setSelectedSec] = useState<string>()
 
   const [start, end] = useMemo(
-    () => getDateAndTimeFromString(date, time),
+    () => getDateAndTimeFromString(date, time, true),
     [date, time]
   )
 
@@ -109,6 +109,41 @@ export function IseCard({ date, time, title, code, group }: ExamCardProps) {
     } else {
       localStorage.setItem('selectedSecs', JSON.stringify({ [code]: sec }))
     }
+  }
+
+  if (
+    start.getTime() === 253402189200000 &&
+    end.getTime() === 253402189200000
+  ) {
+    return (
+      <div className='border-border group flex size-full flex-col gap-1 rounded-lg border bg-stone-200 px-6 py-2.5 text-base shadow-sm'>
+        <div className='flex items-center justify-between gap-2'>
+          <h2 className='text-esc-carmine-500 w-full font-semibold'>
+            {code} {title}
+          </h2>
+        </div>
+        <div className='text-muted-foreground text-sm'>
+          {language === 'th'
+            ? 'วันที่และเวลาจะประกาศอีกครั้ง'
+            : 'Date and time to be announced'}
+        </div>
+      </div>
+    )
+  } else if (start.getTime() === 0 && end.getTime() === 0) {
+    return (
+      <div className='border-border group flex size-full flex-col gap-1 rounded-lg border bg-stone-200 px-6 py-2.5 text-base shadow-sm'>
+        <div className='flex items-center justify-between gap-2'>
+          <h2 className='text-esc-carmine-500 w-full font-semibold'>
+            {code} {title}
+          </h2>
+        </div>
+        <div className='text-muted-foreground text-sm'>
+          {language === 'th'
+            ? 'วิชานี้ถูกยกเลิกการสอบ'
+            : 'This exam has been cancelled'}
+        </div>
+      </div>
+    )
   }
 
   return (
