@@ -6,6 +6,9 @@ RUN corepack enable
 WORKDIR /app
 COPY . /app
 
+ARG VITE_GTAG_ID
+ENV VITE_GTAG_ID=$VITE_GTAG_ID
+
 # Use Railway build cache for pnpm store
 # NOTE: Replace RAILWAY_SERVICE_ID with your actual Railway service ID to persist cache across builds
 # Format: id=s/<service id>-<target path>,target=<target path>
