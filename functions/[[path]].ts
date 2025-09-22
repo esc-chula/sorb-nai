@@ -24,3 +24,11 @@ export const onRequest = createRequestHandler({
     }
   },
 })
+
+// Ensure Cloudflare Pages Functions enable Node.js compatibility even if
+// wrangler.toml is not detected during the Pages build.
+// This prevents runtime errors like: No such module "node:fs"
+export const config = {
+  compatibility_date: '2025-09-01',
+  compatibility_flags: ['nodejs_compat'],
+}
