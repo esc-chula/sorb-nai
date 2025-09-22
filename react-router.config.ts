@@ -1,7 +1,6 @@
 import type { Config } from '@react-router/dev/config'
 
 export default {
-  // Config options...
-  // Server-side render by default, to enable SPA mode set this to `false`
+  // Use SSR build (default). Cloudflare plugin is disabled in Vite config to avoid build crash on Pages.
   ssr: true,
 } satisfies Config

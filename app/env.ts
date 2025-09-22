@@ -1,10 +1,37 @@
 import { createEnv } from '@t3-oss/env-core'
 import { z } from 'zod'
 
+// Support both Node (process.env) and Cloudflare Pages/Workers (import.meta.env)
+const runtimeEnvRaw: Record<string, unknown> =
+  typeof process !== 'undefined' && (process as any).env
+    ? (process as any).env
+    : ((import.meta as any).env ?? {})
+
+// Map client-provided VITE_* variables to server keys when not present
+const runtimeEnv: Record<string, string | number | boolean | undefined> = {}
+for (const [key, value] of Object.entries(runtimeEnvRaw)) {
+  if (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    typeof value === 'undefined'
+  ) {
+    runtimeEnv[key] = value
+  } else if (value != null) {
+    runtimeEnv[key] = String(value)
+  }
+}
+if (!runtimeEnv['FILE_PATH'] && runtimeEnv['VITE_FILE_PATH']) {
+  runtimeEnv['FILE_PATH'] = runtimeEnv['VITE_FILE_PATH']
+}
+if (!runtimeEnv['ISE_FILE_PATH'] && runtimeEnv['VITE_ISE_FILE_PATH']) {
+  runtimeEnv['ISE_FILE_PATH'] = runtimeEnv['VITE_ISE_FILE_PATH']
+}
+
 export const env = createEnv({
   server: {
-    FILE_PATH: z.string().url(),
-    ISE_FILE_PATH: z.string().url(),
+    FILE_PATH: z.string().url().optional(),
+    ISE_FILE_PATH: z.string().url().optional(),
   },
 
   /**
@@ -25,7 +52,7 @@ export const env = createEnv({
    * What object holds the environment variables at runtime. This is usually
    * `process.env` or `import.meta.env`.
    */
-  runtimeEnv: process.env,
+  runtimeEnv,
 
   /**
    * By default, this library will feed the environment variables directly to

@@ -26,13 +26,17 @@ import {
 } from '~/types/class'
 import type { Route } from '../../+types/root'
 
-export async function loader({ params }: Route.LoaderArgs) {
+export async function loader({ params, context }: Route.LoaderArgs) {
   const { studentId } = params
   if (!studentId) {
     throw new Error('Student ID is required')
   }
 
-  const res = await fetch(env.FILE_PATH)
+  const filePath = (context as any)?.FILE_PATH ?? env.FILE_PATH
+  if (!filePath) {
+    throw new Error('Missing FILE_PATH')
+  }
+  const res = await fetch(filePath)
   if (!res.ok) {
     throw new Error('Failed to fetch data')
   }

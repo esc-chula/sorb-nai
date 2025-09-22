@@ -21,13 +21,17 @@ import type { Route } from '../../+types/root'
 import { iseDataSchema, type IseEntry } from '~/types/ise'
 import { IseCard } from '~/components/ise-card'
 
-export async function loader({ params }: Route.LoaderArgs) {
+export async function loader({ params, context }: Route.LoaderArgs) {
   const { studentId } = params
   if (!studentId) {
     throw new Error('Student ID is required')
   }
 
-  const res = await fetch(env.ISE_FILE_PATH)
+  const iseFilePath = (context as any)?.ISE_FILE_PATH ?? env.ISE_FILE_PATH
+  if (!iseFilePath) {
+    throw new Error('Missing ISE_FILE_PATH')
+  }
+  const res = await fetch(iseFilePath)
   if (!res.ok) {
     throw new Error('Failed to fetch data')
   }
