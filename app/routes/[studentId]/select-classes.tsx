@@ -84,23 +84,23 @@ export default function SelectClassesPage({
     }
   }, [])
 
+  // Persist selected classes to localStorage whenever they change (but not on initial render)
+  useEffect(() => {
+    // Only persist if we have some selections or if localStorage already has data
+    const hasExistingData = localStorage.getItem('selectedClasses') !== null
+    if (selectedClasses.length > 0 || hasExistingData) {
+      localStorage.setItem('selectedClasses', JSON.stringify(selectedClasses))
+    }
+  }, [selectedClasses])
+
   if (!studentId) {
     throw new Error('Student ID is required')
   }
 
   const handleContinue = () => {
-    localStorage.setItem(
-      'selectedClasses',
-      JSON.stringify(
-        selectedClasses.filter((code) => {
-          const iseInfo = ise.find((c) => c.code === code)
-          if (iseInfo) {
-            return tab === 'ise'
-          }
-          return tab === 'thai'
-        })
-      )
-    )
+    // Don't filter - preserve all selected classes regardless of current tab
+    localStorage.setItem('selectedClasses', JSON.stringify(selectedClasses))
+    
     if (tab === 'ise') {
       navigate(`/${studentId}/ise`)
     } else {
@@ -169,19 +169,19 @@ export default function SelectClassesPage({
                         key={code}
                         asChild
                         variant='outline'
-                        onClick={() => {
-                          if (isSelected) {
-                            setSelectedClasses((prev) =>
-                              prev.filter((c) => c !== code)
-                            )
-                          } else {
-                            setSelectedClasses((prev) => [...prev, code])
-                          }
-                        }}
                       >
                         <div
+                          onClick={() => {
+                            if (isSelected) {
+                              setSelectedClasses((prev) =>
+                                prev.filter((c) => c !== code)
+                              )
+                            } else {
+                              setSelectedClasses((prev) => [...prev, code])
+                            }
+                          }}
                           className={cn(
-                            'flex h-max w-full items-start justify-start gap-1 px-6 py-2.5 shadow-sm transition-colors duration-150 hover:underline',
+                            'flex h-max w-full items-start justify-start gap-1 px-6 py-2.5 shadow-sm transition-colors duration-150 hover:underline cursor-pointer',
                             isSelected
                               ? 'bg-esc-carmine-400 text-esc-carmine-50 border-esc-carmine-600 hover:bg-esc-carmine-400 hover:text-esc-carmine-50'
                               : 'bg-card text-esc-carmine-400 border-esc-carmine-200 hover:bg-card hover:text-esc-carmine-400'
@@ -217,19 +217,19 @@ export default function SelectClassesPage({
                         key={code}
                         asChild
                         variant='outline'
-                        onClick={() => {
-                          if (isSelected) {
-                            setSelectedClasses((prev) =>
-                              prev.filter((c) => c !== code)
-                            )
-                          } else {
-                            setSelectedClasses((prev) => [...prev, code])
-                          }
-                        }}
                       >
                         <div
+                          onClick={() => {
+                            if (isSelected) {
+                              setSelectedClasses((prev) =>
+                                prev.filter((c) => c !== code)
+                              )
+                            } else {
+                              setSelectedClasses((prev) => [...prev, code])
+                            }
+                          }}
                           className={cn(
-                            'flex h-max w-full items-start justify-start gap-1 px-6 py-2.5 shadow-sm transition-colors duration-150 hover:underline',
+                            'flex h-max w-full items-start justify-start gap-1 px-6 py-2.5 shadow-sm transition-colors duration-150 hover:underline cursor-pointer',
                             isSelected
                               ? 'bg-esc-carmine-400 text-esc-carmine-50 border-esc-carmine-600 hover:bg-esc-carmine-400 hover:text-esc-carmine-50'
                               : 'bg-card text-esc-carmine-400 border-esc-carmine-200 hover:bg-card hover:text-esc-carmine-400'
