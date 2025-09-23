@@ -89,18 +89,7 @@ export default function SelectClassesPage({
   }
 
   const handleContinue = () => {
-    localStorage.setItem(
-      'selectedClasses',
-      JSON.stringify(
-        selectedClasses.filter((code) => {
-          const iseInfo = ise.find((c) => c.code === code)
-          if (iseInfo) {
-            return tab === 'ise'
-          }
-          return tab === 'thai'
-        })
-      )
-    )
+    localStorage.setItem('selectedClasses', JSON.stringify(selectedClasses))
     if (tab === 'ise') {
       navigate(`/${studentId}/ise`)
     } else {
